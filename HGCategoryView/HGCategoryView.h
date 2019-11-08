@@ -1,6 +1,6 @@
 //
 //  HGCategoryView.h
-//  HGPersonalCenterExtend
+//  HGCategoryView
 //
 //  Created by Arch on 2018/8/20.
 //  Copyright © 2018年 mint_bin. All rights reserved.
@@ -50,10 +50,10 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
 @property (nonatomic, strong) UIColor *titleSelectedColor;
 
 /// 初始选中的下标
-@property (nonatomic) NSInteger originalIndex;
+@property (nonatomic) NSUInteger originalIndex;
 
 /// 当前选中的下标
-@property (nonatomic, readonly) NSInteger selectedIndex;
+@property (nonatomic, readonly) NSUInteger selectedIndex;
 
 /// 自身高度
 @property (nonatomic) CGFloat height;
@@ -80,7 +80,7 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
 @property (nonatomic) CGFloat animateDuration;
 
 /// item点击事件的回调
-@property (nonatomic, copy) void (^selectedItemHelper)(NSUInteger index);
+@property (nonatomic, copy) void (^selectedItemHandler)(NSUInteger index);
 
 
 /**

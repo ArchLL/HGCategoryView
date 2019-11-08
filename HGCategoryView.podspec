@@ -8,16 +8,16 @@
 
 Pod::Spec.new do |s|
   s.name             = 'HGCategoryView'
-  s.version          = '1.0.0'
+  s.version          = '1.0.1'
   s.license          = 'MIT'
-  s.summary          = '一个APP分类切换滚动视图'
+  s.summary          = '一个APP分页切换滚动视图'
   s.description      = %{
-    一个多样式的APP分类切换滚动视图.
+    一个多样式的APP分页切换滚动视图.
   }                       
   s.homepage         = 'https://github.com/ArchLL/HGCategoryView'
   s.author           = { 'Arch' => 'mint_bin@163.com' }
   s.source           = { :git => 'https://github.com/ArchLL/HGCategoryView.git', :tag => s.version.to_s }
-  s.source_files = 'HGPersonalCenterExtend/Classes/*.{h,m}'
+  s.source_files = 'HGCategoryView/*.{h,m}'
   s.ios.frameworks = 'Foundation', 'UIKit'
   s.ios.deployment_target = '8.0'
   s.dependency 'Masonry', '~> 1.1.0'

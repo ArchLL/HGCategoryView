@@ -1,6 +1,6 @@
 //
 //  HGCategoryView.m
-//  HGPersonalCenterExtend
+//  HGCategoryView
 //
 //  Created by Arch on 2018/8/20.
 //  Copyright © 2018年 mint_bin. All rights reserved.
@@ -17,6 +17,11 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 
 @interface HGCategoryViewCell ()
 @property (nonatomic, strong) UILabel *titleLabel;
+@property (nonatomic, strong) UIFont *titleNomalFont;
+@property (nonatomic, strong) UIFont *titleSelectedFont;
+@property (nonatomic, strong) UIColor *titleNormalColor;
+@property (nonatomic, strong) UIColor *titleSelectedColor;
+@property (nonatomic) CGFloat animateDuration;
 @end;
 
 @implementation HGCategoryViewCell
@@ -32,12 +37,29 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     return self;
 }
 
+- (void)setSelected:(BOOL)selected {
+    [super setSelected:selected];
+    self.titleLabel.font = selected ? self.titleSelectedFont : self.titleNomalFont;
+    self.titleLabel.textColor = selected ? self.titleSelectedColor : self.titleNormalColor;
+    [UIView animateWithDuration:self.animateDuration animations:^{
+        if (selected) {
+            self.titleLabel.transform = CGAffineTransformMakeScale(self.fontPointSizeScale, self.fontPointSizeScale);
+        } else {
+            self.titleLabel.transform = CGAffineTransformIdentity;
+        }
+    } completion:nil];
+}
+
 - (UILabel *)titleLabel {
     if (!_titleLabel) {
         _titleLabel = [[UILabel alloc] init];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
     }
     return _titleLabel;
+}
+
+- (CGFloat)fontPointSizeScale {
+    return self.titleSelectedFont.pointSize / self.titleNomalFont.pointSize;
 }
 
 @end
@@ -47,10 +69,11 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 @property (nonatomic, strong) UIView *vernier;
 @property (nonatomic, strong) UIView *topBorder;
 @property (nonatomic, strong) UIView *bottomBorder;
-@property (nonatomic) NSInteger selectedIndex;
-@property (nonatomic) BOOL selectedCellExist;
+@property (nonatomic) NSUInteger selectedIndex;
 @property (nonatomic) CGFloat fontPointSizeScale;
-@property (nonatomic) BOOL isFixedVernierWidth;
+@property (nonatomic) BOOL fixedVernierWidth;
+@property (nonatomic) BOOL onceAgainUpdateVernierLocation;
+@property (nonatomic) BOOL needDelayUpdateVernierLocation;
 @property (nonatomic, strong) MASConstraint *vernierLeftConstraint;
 @property (nonatomic, strong) MASConstraint *vernierWidthConstraint;
 @end
@@ -70,8 +93,8 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         _titleSelectedFont = [UIFont systemFontOfSize:17];
         _titleNormalColor = [UIColor grayColor];
         _titleSelectedColor = [UIColor redColor];
-        _vernier.backgroundColor = self.titleSelectedColor;
         _animateDuration = 0.1;
+        self.vernier.backgroundColor = self.titleSelectedColor;
         [self setupSubViews];
     }
     return self;
@@ -79,47 +102,46 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (self.originalIndex > 0) {
+    if (!self.onceAgainUpdateVernierLocation) {
         self.selectedIndex = self.originalIndex;
-    } else {
-        _selectedIndex = 0;
-        [self updateVernierLocation];
     }
 }
 
 #pragma mark - Public Method
 - (void)scrollToTargetIndex:(NSUInteger)targetIndex sourceIndex:(NSUInteger)sourceIndex percent:(CGFloat)percent {
-    CGRect sourceVernierFrame = [self vernierFrameWithIndex:sourceIndex];
-    CGRect targetVernierFrame = [self vernierFrameWithIndex:targetIndex];
+    HGCategoryViewCell *sourceCell = [self getCell:sourceIndex];
+    HGCategoryViewCell *targetCell = [self getCell:targetIndex];
     
-    CGFloat tempVernierX = sourceVernierFrame.origin.x + (targetVernierFrame.origin.x - sourceVernierFrame.origin.x) * percent;
-    CGFloat tempVernierWidth = sourceVernierFrame.size.width + (targetVernierFrame.size.width - sourceVernierFrame.size.width) * percent;
-    
-    [self.vernierLeftConstraint uninstall];
-    [self.vernierWidthConstraint uninstall];
-    [self.vernierWidthConstraint uninstall];
-    [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
-        self.vernierLeftConstraint = make.left.mas_equalTo(tempVernierX);
-        self.vernierWidthConstraint = make.width.mas_equalTo(tempVernierWidth);
-        if (!self.isFixedVernierWidth) {
-            self->_vernierWidth = tempVernierWidth;
-        }
-    }];
+    if (targetCell) {
+        CGRect sourceVernierFrame = [self vernierFrameWithIndex:sourceIndex];
+        CGRect targetVernierFrame = [self vernierFrameWithIndex:targetIndex];
+        CGFloat tempVernierX = sourceVernierFrame.origin.x + (targetVernierFrame.origin.x - sourceVernierFrame.origin.x) * percent;
+        CGFloat tempVernierWidth = sourceVernierFrame.size.width + (targetVernierFrame.size.width - sourceVernierFrame.size.width) * percent;
+        
+        [self.vernierLeftConstraint uninstall];
+        [self.vernierWidthConstraint uninstall];
+        [self.vernierWidthConstraint uninstall];
+        [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
+            self.vernierLeftConstraint = make.left.mas_equalTo(tempVernierX);
+            self.vernierWidthConstraint = make.width.mas_equalTo(tempVernierWidth);
+            if (!self.fixedVernierWidth) {
+                _vernierWidth = tempVernierWidth;
+            }
+        }];
+    }
     
     if (percent > 0.5) {
-        HGCategoryViewCell *sourceCell = [self getCell:sourceIndex];
-        HGCategoryViewCell *targetCell = [self getCell:targetIndex];
-        
-        if (sourceCell) sourceCell.titleLabel.textColor = self.titleNormalColor;
-        if (targetCell) targetCell.titleLabel.textColor = self.titleSelectedColor;
-        
-        CGFloat scale = self.titleSelectedFont.pointSize / self.titleNomalFont.pointSize;
-        [UIView animateWithDuration:self.animateDuration animations:^{
-            if (sourceCell) sourceCell.titleLabel.transform = CGAffineTransformIdentity;
-            if (targetCell) targetCell.titleLabel.transform = CGAffineTransformMakeScale(scale, scale);
-        } completion:nil];
+        sourceCell.selected = NO;
+        targetCell.selected = YES;
         
         _selectedIndex = targetIndex;
+        
+        if (percent == 1.0) {
+            [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:self.selectedIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+            if (!targetCell) {
+                self.needDelayUpdateVernierLocation = YES;
+            }
+        }
     }
 }
 
@@ -151,23 +173,26 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 }
 
 - (HGCategoryViewCell *)getCell:(NSUInteger)index {
-    return (HGCategoryViewCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
+    return (HGCategoryViewCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
 }
 
 - (void)layoutAndScrollToSelectedItem {    
-    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:self.selectedIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:self.selectedIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:self.onceAgainUpdateVernierLocation];
     
-    if (self.selectedItemHelper) {
-        self.selectedItemHelper(self.selectedIndex);
+    if (self.onceAgainUpdateVernierLocation) {
+        HGCategoryViewCell *selectedCell = [self getCell:self.selectedIndex];
+        if (selectedCell) {
+            [self updateVernierLocation];
+        } else {
+            self.needDelayUpdateVernierLocation = YES;
+        }
+    } else {
+        self.onceAgainUpdateVernierLocation = YES;
+        [self updateVernierLocation];
     }
     
-    HGCategoryViewCell *selectedCell = [self getCell:self.selectedIndex];
-    if (selectedCell) {
-        self.selectedCellExist = YES;
-        [self updateVernierLocation];
-    } else {
-        self.selectedCellExist = NO;
-        //这种情况下updateUnderlineLocation将在self.collectionView滚动结束后执行（代理方法scrollViewDidEndScrollingAnimation）
+    if (self.selectedItemHandler) {
+        self.selectedItemHandler(self.selectedIndex);
     }
 }
 
@@ -178,13 +203,13 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     [self.vernierLeftConstraint uninstall];
     [self.vernierWidthConstraint uninstall];
     [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
-        if (self.isFixedVernierWidth) {
+        if (self.fixedVernierWidth) {
             self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel.mas_centerX).offset(-self.vernierWidth / 2);
             self.vernierWidthConstraint = make.width.mas_equalTo(self.vernierWidth);
         } else {
             self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel);
             self.vernierWidthConstraint = make.width.equalTo(cell.titleLabel);
-            self->_vernierWidth = cell.titleLabel.frame.size.width;
+            _vernierWidth = cell.titleLabel.frame.size.width;
         }
     }];
     
@@ -230,7 +255,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 - (CGRect)vernierFrameWithIndex:(NSUInteger)index {
     HGCategoryViewCell *cell = [self getCell:index];
     CGRect titleLabelFrame = [cell convertRect:cell.titleLabel.frame toView:self.collectionView];
-    if (self.isFixedVernierWidth) {
+    if (self.fixedVernierWidth) {
         return CGRectMake(titleLabelFrame.origin.x + (titleLabelFrame.size.width - self.vernierWidth) / 2,
                           self.collectionView.frame.size.height - self.vernierHeight,
                           self.vernierWidth,
@@ -243,30 +268,9 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     }
 }
 
-/// 仅点击item的时候调用
-- (void)changeItemToTargetIndex:(NSUInteger)targetIndex {
-    if (self.selectedIndex == targetIndex) {
-        return;
-    }
-    
-    HGCategoryViewCell *selectedCell = [self getCell:self.selectedIndex];
-    HGCategoryViewCell *targetCell = [self getCell:targetIndex];
-    
-    if (selectedCell) selectedCell.titleLabel.textColor = self.titleNormalColor;
-    if (targetCell) targetCell.titleLabel.textColor = self.titleSelectedColor;
-    
-    CGFloat scale = self.titleSelectedFont.pointSize / self.titleNomalFont.pointSize;
-    [UIView animateWithDuration:self.animateDuration animations:^{
-        if (selectedCell) selectedCell.titleLabel.transform = CGAffineTransformIdentity;
-        if (targetCell) targetCell.titleLabel.transform = CGAffineTransformMakeScale(scale, scale);
-    } completion:nil];
-    
-    self.selectedIndex = targetIndex;
-}
-
 #pragma mark - UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    CGFloat width = [self getWidthWithContent:self.titles[indexPath.row]];
+    CGFloat width = [self getWidthWithContent:self.titles[indexPath.item]];
     CGFloat height = self.height - ONE_PIXEL * 2;
     return CGSizeMake(self.itemWidth > 0 ? self.itemWidth : width, height);
 }
@@ -290,37 +294,52 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     HGCategoryViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([HGCategoryViewCell class]) forIndexPath:indexPath];
-    cell.titleLabel.text = self.titles[indexPath.row];
-    cell.titleLabel.textColor = self.selectedIndex == indexPath.row ? self.titleSelectedColor : self.titleNormalColor;
-    if (self.selectedIndex == indexPath.row) {
-        cell.titleLabel.transform = CGAffineTransformMakeScale(self.fontPointSizeScale, self.fontPointSizeScale);
-        cell.titleLabel.font = self.titleSelectedFont;
-    } else {
-        cell.titleLabel.transform = CGAffineTransformIdentity;
-        cell.titleLabel.font = self.titleNomalFont;
-    }
+    cell.titleLabel.text = self.titles[indexPath.item];
+    cell.titleNomalFont = self.titleNomalFont;
+    cell.titleSelectedFont = self.titleSelectedFont;
+    cell.titleNormalColor = self.titleNormalColor;
+    cell.titleSelectedColor = self.titleSelectedColor;
+    cell.animateDuration = self.animateDuration;
     return cell;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(HGCategoryViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+    cell.selected = self.selectedIndex == indexPath.item;
 }
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
-    [self changeItemToTargetIndex:indexPath.row];
+    if (self.selectedIndex == indexPath.item) {
+        return;
+    }
+    
+    // 防止快速连续点击导致连续缩放动画
+    collectionView.userInteractionEnabled = NO;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        collectionView.userInteractionEnabled = YES;
+    });
+    
+    HGCategoryViewCell *selectedCell = [self getCell:self.selectedIndex];
+    selectedCell.selected = NO;
+    
+    HGCategoryViewCell *targetCell = [self getCell:indexPath.item];
+    targetCell.selected = YES;
+    
+    self.selectedIndex = indexPath.item;
 }
 
 #pragma mark - UIScrollViewDelegate
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
-    if (!self.selectedCellExist) {
+    // 如果targetCell不存在，在scrollToItemAtIndexPath动画结束后updateVernierLocation
+    if (self.needDelayUpdateVernierLocation) {
+        self.needDelayUpdateVernierLocation = NO;
         [self updateVernierLocation];
     }
 }
 
-#pragma mark - Setter
-- (void)setSelectedIndex:(NSInteger)selectedIndex {
-    if (self.titles.count == 0) {
-        return;
-    }
-    if (selectedIndex >= self.titles.count) {
+#pragma mark - Setters
+- (void)setSelectedIndex:(NSUInteger)selectedIndex {
+    if (selectedIndex > self.titles.count - 1) {
         _selectedIndex = self.titles.count - 1;
     } else {
         _selectedIndex = selectedIndex;
@@ -380,7 +399,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 
 - (void)setVernierWidth:(CGFloat)vernierWidth {
     _vernierWidth = vernierWidth;
-    self.isFixedVernierWidth = YES;
+    self.fixedVernierWidth = YES;
 }
 
 - (void)setTitleNomalFont:(UIFont *)titleNomalFont {
@@ -403,7 +422,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     [self.collectionView reloadData];
 }
 
-#pragma mark - Getter
+#pragma mark - Getters
 - (UICollectionView *)collectionView {
     if (!_collectionView) {
         UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc] init];
