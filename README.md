@@ -6,7 +6,7 @@ HGCategoryView is available through [CocoaPods](https://cocoapods.org). To insta
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'HGCategoryView', '~> 1.0.2'
+pod 'HGCategoryView', '~> 1.0.3'
 ```
 
 ## Usage

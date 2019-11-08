@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'HGCategoryView'
-  s.version          = '1.0.2'
+  s.version          = '1.0.3'
   s.license          = 'MIT'
   s.summary          = '一个APP分页切换滚动视图'
   s.description      = %{

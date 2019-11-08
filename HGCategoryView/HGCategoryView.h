@@ -16,70 +16,69 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
     HGCategoryViewAlignmentRight
 };
 
-@interface HGCategoryViewCell : UICollectionViewCell
-@property (nonatomic, readonly, strong) UILabel *titleLabel;
-@end;
-
 @interface HGCategoryView : UIView
 
 /// titles
 @property (nonatomic, copy) NSArray<NSString *> *titles;
 
+/// 初始选中的下标，default：0
+@property (nonatomic) NSUInteger originalIndex;
+
+/// 当前选中的下标，default：originalIndex
+@property (nonatomic, readonly) NSUInteger selectedIndex;
+
+/// 自身高度，default：41
+@property (nonatomic) CGFloat height;
+
 /// 分布方式（左、中、右）
 @property (nonatomic) HGCategoryViewAlignment alignment;
+
+/// 未选中时的字体，default size：16
+@property (nonatomic, strong) UIFont *titleNomalFont;
+
+/// 选中时的字体，default size：17
+@property (nonatomic, strong) UIFont *titleSelectedFont;
+
+/// 未选中时的字体颜色，default：[UIColor grayColor]
+@property (nonatomic, strong) UIColor *titleNormalColor;
+
+/// 选中时的字体颜色，default：[UIColor redColor]
+@property (nonatomic, strong) UIColor *titleSelectedColor;
+
+/// 上边框(高度为一个像素)，默认显示
+@property (nonatomic, strong, readonly) UIView *topBorder;
+
+/// 下边框(高度为一个像素)，默认显示
+@property (nonatomic, strong, readonly) UIView *bottomBorder;
 
 /// 游标
 @property (nonatomic, strong, readonly) UIView *vernier;
 
-/// 上边框
-@property (nonatomic, strong, readonly) UIView *topBorder;
-
-/// 下边框
-@property (nonatomic, strong, readonly) UIView *bottomBorder;
-
-/// 未选中时的字体大小
-@property (nonatomic, strong) UIFont *titleNomalFont;
-
-/// 选中时的字体大小
-@property (nonatomic, strong) UIFont *titleSelectedFont;
-
-/// 未选中时的字体颜色
-@property (nonatomic, strong) UIColor *titleNormalColor;
-
-/// 选中时的字体颜色
-@property (nonatomic, strong) UIColor *titleSelectedColor;
-
-/// 初始选中的下标
-@property (nonatomic) NSUInteger originalIndex;
-
-/// 当前选中的下标
-@property (nonatomic, readonly) NSUInteger selectedIndex;
-
-/// 自身高度
-@property (nonatomic) CGFloat height;
-
-/// 游标的高度
-@property (nonatomic) CGFloat vernierHeight;
-
-/// 固定游标的宽度，默认是不固定的
+/// 游标的宽度(设置后固定)，default：随着title的宽度变化，
 @property (nonatomic) CGFloat vernierWidth;
 
-/// item间距
+/// 游标的高度，default：1.8
+@property (nonatomic) CGFloat vernierHeight;
+
+/// item间距，default：15
 @property (nonatomic) CGFloat itemSpacing;
 
-/// item宽度
+/// item宽度(设置后固定)，default：随着内容宽度变化
 @property (nonatomic) CGFloat itemWidth;
 
-/// collectionView左右的margin
-@property (nonatomic) CGFloat leftAndRightMargin;
+/// collectionView左边的margin，default：10
+@property (nonatomic) CGFloat leftMargin;
 
-/// item是否等分(实质上改变的是itemWidth)，Default：NO
+/// collectionView右边的margin，default：10
+@property (nonatomic) CGFloat rightMargin;
+
+/// item是否等分(实质上改变的是itemWidth)，default：NO
 @property (nonatomic) CGFloat isEqualParts;
 
 /// 字体变大、vernier位置切换动画时长，default：0.1
 @property (nonatomic) CGFloat animateDuration;
 
-/// item点击事件的回调
+/// item点击事件回调
 @property (nonatomic, copy) void (^selectedItemHandler)(NSUInteger index);
 
 
