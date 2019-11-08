@@ -100,13 +100,6 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     return self;
 }
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    if (!self.onceAgainUpdateVernierLocation) {
-        self.selectedIndex = self.originalIndex;
-    }
-}
-
 #pragma mark - Public Method
 - (void)scrollToTargetIndex:(NSUInteger)targetIndex sourceIndex:(NSUInteger)sourceIndex percent:(CGFloat)percent {
     HGCategoryViewCell *sourceCell = [self getCell:sourceIndex];
@@ -199,23 +192,24 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 - (void)updateVernierLocation {
     [self.collectionView layoutIfNeeded];
     HGCategoryViewCell *cell = [self getCell:self.selectedIndex];
-    
-    [self.vernierLeftConstraint uninstall];
-    [self.vernierWidthConstraint uninstall];
-    [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
-        if (self.fixedVernierWidth) {
-            self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel.mas_centerX).offset(-self.vernierWidth / 2);
-            self.vernierWidthConstraint = make.width.mas_equalTo(self.vernierWidth);
-        } else {
-            self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel);
-            self.vernierWidthConstraint = make.width.equalTo(cell.titleLabel);
-            _vernierWidth = cell.titleLabel.frame.size.width;
-        }
-    }];
-    
-    [UIView animateWithDuration:self.animateDuration animations:^{
-        [self.collectionView layoutIfNeeded];
-    }];
+    if (cell) {
+        [self.vernierLeftConstraint uninstall];
+        [self.vernierWidthConstraint uninstall];
+        [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
+            if (self.fixedVernierWidth) {
+                self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel.mas_centerX).offset(-self.vernierWidth / 2);
+                self.vernierWidthConstraint = make.width.mas_equalTo(self.vernierWidth);
+            } else {
+                self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel);
+                self.vernierWidthConstraint = make.width.equalTo(cell.titleLabel);
+                _vernierWidth = cell.titleLabel.frame.size.width;
+            }
+        }];
+        
+        [UIView animateWithDuration:self.animateDuration animations:^{
+            [self.collectionView layoutIfNeeded];
+        }];
+    }
 }
 
 - (void)updateCollectionViewContentInset {
@@ -338,7 +332,17 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 }
 
 #pragma mark - Setters
+- (void)setOriginalIndex:(NSUInteger)originalIndex {
+    _originalIndex = originalIndex;
+    self.onceAgainUpdateVernierLocation = NO;
+    self.selectedIndex = self.originalIndex;
+}
+
 - (void)setSelectedIndex:(NSUInteger)selectedIndex {
+    if (self.titles.count == 0) {
+        return;
+    }
+    
     if (selectedIndex > self.titles.count - 1) {
         _selectedIndex = self.titles.count - 1;
     } else {
