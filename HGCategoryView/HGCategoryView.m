@@ -184,7 +184,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         HGCategoryViewCell *selectedCell = [self getCell:self.selectedIndex];
         if (selectedCell) {
             [self updateVernierLocation];
-        } else {
+        } else { // 快速滑动
             self.needDelayUpdateVernierLocation = YES;
         }
     } else {
@@ -196,17 +196,20 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
     }
 }
 
+- (void)resetVernierLocation {
+    self.onceAgainUpdateVernierLocation = NO;
+    [self updateVernierLocation];
+}
+
 - (void)updateVernierLocation {
     [self.collectionView layoutIfNeeded];
     HGCategoryViewCell *cell = [self getCell:self.selectedIndex];
     if (cell) {
-        self.onceAgainUpdateVernierLocation = YES;
-        
         [self.vernierLeftConstraint uninstall];
         [self.vernierWidthConstraint uninstall];
         [self.vernier mas_updateConstraints:^(MASConstraintMaker *make) {
             if (self.fixedVernierWidth) {
-                self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel.mas_centerX).offset(-self.vernierWidth / 2);
+                self.vernierLeftConstraint = make.left.equalTo(cell.contentView.mas_centerX).offset(-self.vernierWidth / 2);
                 self.vernierWidthConstraint = make.width.mas_equalTo(self.vernierWidth);
             } else {
                 self.vernierLeftConstraint = make.left.equalTo(cell.titleLabel);
@@ -217,6 +220,8 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         
         [UIView animateWithDuration:self.animateDuration animations:^{
             [self.collectionView layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            self.onceAgainUpdateVernierLocation = YES;
         }];
     }
 }
@@ -343,8 +348,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 #pragma mark - Setters
 - (void)setOriginalIndex:(NSUInteger)originalIndex {
     _originalIndex = originalIndex;
-    self.onceAgainUpdateVernierLocation = NO;
-    self.selectedIndex = self.originalIndex;
+    [self resetVernierLocation];
 }
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex {
@@ -384,6 +388,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 - (void)setVernierWidth:(CGFloat)vernierWidth {
     _vernierWidth = vernierWidth;
     self.fixedVernierWidth = YES;
+    [self resetVernierLocation];
 }
 
 - (void)setVernierHeight:(CGFloat)vernierHeight {
