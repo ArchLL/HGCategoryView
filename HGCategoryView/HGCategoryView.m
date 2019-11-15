@@ -28,7 +28,6 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.clipsToBounds = YES;
         [self.contentView addSubview:self.titleLabel];
         [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.center.equalTo(self);
@@ -39,7 +38,6 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 
 - (void)setSelected:(BOOL)selected {
     [super setSelected:selected];
-    self.titleLabel.font = selected ? self.titleSelectedFont : self.titleNomalFont;
     self.titleLabel.textColor = selected ? self.titleSelectedColor : self.titleNormalColor;
     [UIView animateWithDuration:self.animateDuration animations:^{
         if (selected) {
@@ -47,7 +45,9 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         } else {
             self.titleLabel.transform = CGAffineTransformIdentity;
         }
-    } completion:nil];
+    } completion:^(BOOL finished) {
+        self.titleLabel.font = selected ? self.titleSelectedFont : self.titleNomalFont;
+    }];
 }
 
 - (UILabel *)titleLabel {
@@ -191,8 +191,8 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         [self updateVernierLocation];
     }
     
-    if (self.selectedItemHandler) {
-        self.selectedItemHandler(self.selectedIndex);
+    if ([self.delegate respondsToSelector:@selector(categoryViewDidSelectedItemAtIndex:)]) {
+        [self.delegate categoryViewDidSelectedItemAtIndex:self.selectedIndex];
     }
 }
 

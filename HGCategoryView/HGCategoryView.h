@@ -16,7 +16,14 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
     HGCategoryViewAlignmentRight
 };
 
+@protocol HGCategoryViewDelegate <NSObject>
+@optional
+- (void)categoryViewDidSelectedItemAtIndex:(NSInteger)index;
+@end
+
 @interface HGCategoryView : UIView
+
+@property (nonatomic, weak) id<HGCategoryViewDelegate> delegate;
 
 /// titles
 @property (nonatomic, copy) NSArray<NSString *> *titles;
@@ -77,10 +84,6 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
 
 /// 字体变大、vernier位置切换动画时长，default：0.1
 @property (nonatomic) CGFloat animateDuration;
-
-/// item点击事件回调
-@property (nonatomic, copy) void (^selectedItemHandler)(NSUInteger index);
-
 
 /**
  使collectionView滚动到指定的cell
