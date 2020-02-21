@@ -348,7 +348,9 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 #pragma mark - Setters
 - (void)setOriginalIndex:(NSUInteger)originalIndex {
     _originalIndex = originalIndex;
+    self.selectedIndex = originalIndex;
     [self resetVernierLocation];
+    [self.collectionView reloadData];
 }
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex {
