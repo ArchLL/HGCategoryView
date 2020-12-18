@@ -69,7 +69,6 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
 @property (nonatomic, strong) UIView *vernier;
 @property (nonatomic, strong) UIView *topBorder;
 @property (nonatomic, strong) UIView *bottomBorder;
-@property (nonatomic) NSUInteger selectedIndex;
 @property (nonatomic) BOOL fixedVernierWidth;
 @property (nonatomic) BOOL onceAgainUpdateVernierLocation;
 @property (nonatomic) BOOL needDelayUpdateVernierLocation;

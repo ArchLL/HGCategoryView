@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
 @property (nonatomic) NSUInteger originalIndex;
 
 /// 当前选中的下标，default：originalIndex
-@property (nonatomic, readonly) NSUInteger selectedIndex;
+@property (nonatomic) NSUInteger selectedIndex;
 
 /// 自身高度，default：41
 @property (nonatomic) CGFloat height;
