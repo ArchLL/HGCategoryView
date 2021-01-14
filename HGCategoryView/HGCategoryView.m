@@ -13,8 +13,6 @@
 #define SCREEN_WIDTH [[UIScreen mainScreen] bounds].size.width
 #define ONE_PIXEL (1 / [UIScreen mainScreen].scale)
 
-const CGFloat HGCategoryViewDefaultHeight = 41;
-
 @interface HGCategoryViewCell : UICollectionViewCell
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UIFont *titleNomalFont;
@@ -83,7 +81,7 @@ const CGFloat HGCategoryViewDefaultHeight = 41;
         self.backgroundColor = [UIColor whiteColor];
         _fistTimeUpdateVernierLocation = YES;
         _selectedIndex = 0;
-        _height = HGCategoryViewDefaultHeight;
+        _height = 41;
         _vernierHeight = 1.8;
         _itemSpacing = 15;
         _leftMargin = 10;
