@@ -37,7 +37,8 @@
 - (void)setSelected:(BOOL)selected {
     [super setSelected:selected];
     self.titleLabel.textColor = selected ? self.titleSelectedColor : self.titleNormalColor;
-    [UIView animateWithDuration:self.animateDuration animations:^{
+    CGFloat duration = self.isSelected == selected ? 0 : self.animateDuration;
+    [UIView animateWithDuration:duration animations:^{
         if (selected) {
             self.titleLabel.transform = CGAffineTransformMakeScale(self.fontPointSizeScale, self.fontPointSizeScale);
         } else {
@@ -90,7 +91,7 @@
         _titleSelectedFont = [UIFont systemFontOfSize:17];
         _titleNormalColor = [UIColor grayColor];
         _titleSelectedColor = [UIColor redColor];
-        _animateDuration = 0.1;
+        _animateDuration = 0.25;
         self.vernier.backgroundColor = self.titleSelectedColor;
         [self setupSubViews];
     }
@@ -133,13 +134,12 @@
 }
 
 - (void)updateTitle:(NSString *)title atIndex:(NSUInteger)index {
-    if (index >= self.titles.count) {
-        return;
-    }
+    if (index >= self.titles.count) return;
     
     NSMutableArray *array = [self.titles mutableCopy];
     array[index] = title;
     self.titles = array;
+    [self updateVernierLocationWithCell:[self getCell:index]];
 }
 
 #pragma mark - Private Method
@@ -177,9 +177,7 @@
 }
 
 - (void)updateVernierLocationWithCell:(HGCategoryViewCell *)cell {
-    if (!cell) {
-        return;
-    }
+    if (!cell) return;
     
     if (self.fixedVernierWidth) {
         CGFloat x = cell.center.x - self.vernierWidth / 2;
@@ -278,9 +276,7 @@
 
 #pragma mark - UICollectionViewDelegate
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.selectedIndex == indexPath.item) {
-        return;
-    }
+    if (self.selectedIndex == indexPath.item) return;
     
     // 防止快速连续点击导致连续缩放动画
     collectionView.userInteractionEnabled = NO;

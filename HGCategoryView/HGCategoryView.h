@@ -77,7 +77,7 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
 /// item是否等分(实质上改变的是itemWidth)，default：NO
 @property (nonatomic) CGFloat isEqualParts;
 
-/// 字体变大、vernier位置切换动画时长，default：0.1
+/// 字体变大、vernier位置切换动画时长，default：0.25
 @property (nonatomic) CGFloat animateDuration;
 
 /**
