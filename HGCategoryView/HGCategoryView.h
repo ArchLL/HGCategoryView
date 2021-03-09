@@ -89,4 +89,9 @@ typedef NS_ENUM(NSUInteger, HGCategoryViewAlignment) {
  */
 - (void)scrollToTargetIndex:(NSUInteger)targetIndex sourceIndex:(NSUInteger)sourceIndex percent:(CGFloat)percent;
 
+/// 修改当前选中的title
+- (void)updateSelectedTitle:(NSString *)title;
+/// 修改对应index的title
+- (void)updateTitle:(NSString *)title atIndex:(NSUInteger)index;
+
 @end
